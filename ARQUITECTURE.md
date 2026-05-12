@@ -4,7 +4,7 @@
 
 Este documento describe la arquitectura del sistema asistente de trabajo especial: un conjunto de servicios **desacoplados** que colaboran para ofrecer interacción con el usuario, orquestación de inteligencia artificial y procesamiento de datos y modelos.
 
-**FastAPI** actúa como capa de exposición (API, WebSockets y punto de entrada principal para las interacciones del usuario). La **orquestación inteligente** (flujos conversacionales, estados, herramientas y cadenas con LLMs) se concentra en **LangChain** y **LangGraph**, integrados en el backend pero separados conceptualmente de los routers y de la lógica de presentación HTTP/WebSocket.
+**FastAPI** actúa como capa de exposición (API HTTP versionada en **`v1` y `v2`**, WebSockets y punto de entrada principal para las interacciones del usuario). La **orquestación inteligente** (flujos conversacionales, estados, herramientas y cadenas con LLMs) se concentra en **LangChain** y **LangGraph**, integrados en el backend pero separados conceptualmente de los routers y de la lógica de presentación HTTP/WebSocket.
 
 El objetivo es mantener límites claros entre interfaz, API, IA, datos y machine learning, y facilitar el despliegue local homogéneo mediante contenedores.
 
@@ -50,7 +50,7 @@ flowchart TB
 
 | Capa | Rol resumido |
 |------|----------------|
-| **Backend** | API principal con FastAPI; WebSockets; delegación de IA a servicios internos (LangChain / LangGraph); acceso a datos y coordinación con Core ML o servicio ML. |
+| **Backend** | API principal con FastAPI; **versionamiento explícito de la API en `v1` y `v2`** (rutas, routers y contratos separados); WebSockets; delegación de IA a servicios internos (LangChain / LangGraph); acceso a datos y coordinación con Core ML o servicio ML. |
 | **Frontend** | Interfaz con React 18; consumo de eventos y datos del backend; comunicación principal por WebSocket; sin lógica pesada de ML ni de orquestación de IA. |
 | **Data / Machine Learning** | Carpeta `data/`: origen controlado de datasets y documentos base; reglas estrictas de qué versionar en el repositorio. |
 | **Core ML** | Núcleo de entrenamiento, preprocesamiento, evaluación, inferencia y artefactos; separado del backend para evitar acoplamiento. |
@@ -63,7 +63,7 @@ flowchart TB
 ## 5. Comunicación entre componentes
 
 - **Frontend ↔ Backend:** comunicación principal mediante **WebSocket** (conexión persistente y bidireccional). El frontend envía mensajes o eventos y recibe respuestas o notificaciones sin conocer los detalles internos de los modelos.
-- **FastAPI** recibe y enruta esas interacciones; los handlers de HTTP/WebSocket deben permanecer **delgados** y delegar en servicios de dominio o de IA.
+- **FastAPI** recibe y enruta esas interacciones; el tráfico HTTP REST debe quedar bajo **prefijos de versión** (`/api/v1`, `/api/v2`) con routers y esquemas aislados por versión. Los handlers de HTTP/WebSocket deben permanecer **delgados** y delegar en servicios de dominio o de IA.
 - **Servicios de IA (internos al backend):** encapsulan el uso de **LangGraph** (flujo en grafo, estados, nodos, transiciones) y **LangChain** (prompts, tools, modelos, retrievers, cadenas, conectores). LangGraph coordina el flujo; LangChain aporta las piezas reutilizables hacia los LLMs y herramientas.
 - **Backend ↔ Core ML / servicio ML:** el backend puede invocar procesos, APIs internas o consumir **artefactos** generados por `core_ml` o por el contenedor de procesamiento ML, sin mezclar entrenamiento ni pipelines complejos dentro de los endpoints.
 - **Backend / servicios ↔ PostgreSQL:** persistencia y consulta de estado de aplicación, metadatos, sesiones u otros datos acordados por el diseño; siempre respetando variables de entorno para conexión y secretos.
@@ -72,9 +72,21 @@ flowchart TB
 
 ## 6. Backend con FastAPI, LangChain y LangGraph
 
+### Versionamiento de la API: `v1` y `v2`
+
+El backend es el **único lugar** donde se define y evoluciona la **API HTTP** del producto. Para permitir cambios sin romper clientes existentes, **toda la superficie REST se organiza por versiones**, con **dos versiones activas en el diseño objetivo: `v1` y `v2`**.
+
+- **Convención de URL:** prefijo obligatorio en rutas REST, por ejemplo `/api/v1/...` y `/api/v2/...`. No se exponen recursos REST “sin versión” salvo acuerdo explícito del equipo (por ejemplo health checks en `/health` fuera del prefijo versionado).
+- **Aislamiento en código:** cada versión tiene **sus propios routers** (y, cuando aplique, **esquemas Pydantic** y DTOs) bajo módulos dedicados (p. ej. `app/api/v1/`, `app/api/v2/`), de modo que los cambios en `v2` no reescriban por accidente los contratos de `v1`.
+- **Regla de compatibilidad:** `v1` se mantiene **estable** para clientes legados; las mejoras o rupturas de contrato se introducen en `v2` (o en la siguiente versión mayor acordada). La deprecación de una versión debe documentarse (fecha, sustituto, cabeceras o mensajes de aviso si el equipo las adopta).
+- **WebSocket y otros canales:** si el protocolo por WebSocket incluye un campo de versión o namespaces, debe alinearse con la misma filosofía (evolución explícita, sin mezclar comportamientos incompatibles en el mismo endpoint sin criterio).
+- **Servicios compartidos:** la lógica de dominio e IA (LangGraph, LangChain, acceso a datos) puede vivir en capas **reutilizables** bajo `app/services/` o equivalente; las versiones **solo** diferencian la **forma** de la API (entrada/salida, códigos, agregación), no duplican entrenamiento ni orquestación innecesariamente.
+
+En resumen: **el versionamiento `v1` / `v2` es un pilar del backend**, no un detalle opcional; condiciona estructura de carpetas, revisión de código y pruebas.
+
 ### FastAPI
 
-- Exponer la API REST necesaria y los **WebSockets**.
+- Exponer la API REST necesaria **montando routers bajo `/api/v1` y `/api/v2`** y los **WebSockets** según el diseño acordado.
 - Autenticación/autorización, validación de entrada, serialización y errores HTTP cuando aplique.
 - **No** debe alojar la lógica compleja de IA directamente en los endpoints o en los manejadores WebSocket; debe **delegar** en servicios dedicados.
 
@@ -93,7 +105,7 @@ flowchart TB
 - **Orquestación del flujo inteligente** dentro del backend: grafos de estados, nodos, transiciones y lógica conversacional o de procesamiento por pasos.
 - Punto de coordinación para decisiones, ramas y ejecución de herramientas en el grafo.
 
-**LangChain y LangGraph son parte central de la arquitectura del backend**, no complementos opcionales para un diseño objetivo. Conviven **dentro del repositorio del backend**, en módulos separados de los routers (por ejemplo bajo `app/ai/`), para que los `routes` y `websockets` solo coordinen y deleguen.
+**LangChain y LangGraph son parte central de la arquitectura del backend**, no complementos opcionales para un diseño objetivo. Conviven **dentro del repositorio del backend**, en módulos separados de los routers versionados (por ejemplo bajo `app/ai/`), para que `app/api/v1/`, `app/api/v2/` y `websockets` solo coordinen y deleguen.
 
 ---
 
@@ -149,7 +161,7 @@ Responsabilidades típicas (según evolucione el código):
 
 ### Ubicación en el código
 
-Esta capa debe vivir **dentro del backend** (por ejemplo `app/ai/langchain/`, `app/ai/langgraph/`, `prompts/`, `tools/`, `memory/`), **separada** de `app/api/routes/` y `app/api/websockets/`, que solo orquestan la petición y devuelven la respuesta al cliente.
+Esta capa debe vivir **dentro del backend** (por ejemplo `app/ai/langchain/`, `app/ai/langgraph/`, `prompts/`, `tools/`, `memory/`), **separada** de `app/api/v1/`, `app/api/v2/` y `app/api/websockets/`, que solo orquestan la petición y devuelven la respuesta al cliente según la versión de API expuesta.
 
 ---
 
@@ -191,7 +203,8 @@ project-root/
 ├── backend/
 │   ├── app/
 │   │   ├── api/
-│   │   │   ├── routes/
+│   │   │   ├── v1/          # routers, esquemas y contratos REST versión 1 (/api/v1)
+│   │   │   ├── v2/          # routers, esquemas y contratos REST versión 2 (/api/v2)
 │   │   │   └── websockets/
 │   │   ├── core/
 │   │   ├── services/
@@ -240,6 +253,7 @@ Los nombres exactos de archivos Docker o subcarpetas pueden ajustarse siempre qu
 
 ## 14. Reglas de versionado y repositorio
 
+- **API del backend:** el versionamiento **`v1` y `v2`** se implementa y revisa en el código del backend (routers y contratos por prefijo); no se mezclan cambios incompatibles en la misma versión publicada sin decisión explícita del equipo.
 - **No** subir datasets pesados ni múltiples copias de datos crudos al repositorio.
 - Dentro de **`data/`**, convención: **solo** el **`.zip` inicial** acordado como dataset base versionado; el resto documentado pero no almacenado en Git.
 - **Ignorar** en `.gitignore`: documentos procesados adicionales, **modelos pesados**, **cachés**, **logs**, temporales y artefactos generados bajo `core_ml/artifacts/` o rutas equivalentes cuando no deban versionarse.
@@ -265,4 +279,4 @@ Herramientas como Kubernetes, MLflow, Airflow u orquestadores cloud pueden valor
 
 ## 16. Resumen final
 
-La arquitectura busca **separar responsabilidades**: el **frontend** se centra en la experiencia y el **WebSocket**; el **backend** permanece **liviano en los endpoints**, actuando como fachada y punto de entrada; la **inteligencia orquestada** vive en **LangGraph** y **LangChain** dentro del backend pero modularizada; el **Core ML** aísla entrenamiento, evaluación e inferencia pesada; la **capa Data** limita lo versionado para proteger el repositorio; **PostgreSQL** y los **contenedores** definidos en **`docker/`** y **`docker-compose.yml`** unifican el **despliegue local** y facilitan la incorporación de nuevos desarrolladores con un mapa claro del sistema.
+La arquitectura busca **separar responsabilidades**: el **frontend** se centra en la experiencia y el **WebSocket**; el **backend** permanece **liviano en los endpoints**, actuando como fachada y punto de entrada, con **API HTTP explícitamente versionada en `v1` y `v2`** para convivencia de clientes y evolución ordenada; la **inteligencia orquestada** vive en **LangGraph** y **LangChain** dentro del backend pero modularizada; el **Core ML** aísla entrenamiento, evaluación e inferencia pesada; la **capa Data** limita lo versionado para proteger el repositorio; **PostgreSQL** y los **contenedores** definidos en **`docker/`** y **`docker-compose.yml`** unifican el **despliegue local** y facilitan la incorporación de nuevos desarrolladores con un mapa claro del sistema.
