@@ -1,0 +1,230 @@
+.chat-shell {
+  --ink: #14221a;
+  --paper: #f4f0e6;
+  --paper-deep: #e8e1d2;
+  --accent: #c45c26;
+  --accent-soft: rgba(196, 92, 38, 0.14);
+  --muted: #5c6b62;
+  --user-bg: #1a2e24;
+  --user-fg: #f4f0e6;
+  --assistant-bg: #fffdf8;
+  --assistant-border: #c9c0ae;
+
+  width: min(100%, 34rem);
+  min-height: min(88vh, 40rem);
+  margin: 0 auto;
+  padding: clamp(1rem, 4vw, 1.75rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  color: var(--ink);
+  background:
+    radial-gradient(120% 80% at 100% 0%, rgba(196, 92, 38, 0.08), transparent 55%),
+    radial-gradient(90% 60% at 0% 100%, rgba(26, 46, 36, 0.06), transparent 50%),
+    var(--paper);
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 70%, transparent),
+    0 22px 48px -24px color-mix(in srgb, var(--ink) 35%, transparent);
+  position: relative;
+  isolation: isolate;
+}
+
+.chat-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: -1;
+  border-radius: inherit;
+}
+
+.chat-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+}
+
+.chat-head__title {
+  font-family: "Marcellus", serif;
+  font-size: clamp(1.5rem, 4vw, 1.85rem);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.chat-head__sub {
+  font-family: "Atkinson Hyperlegible", sans-serif;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0.35rem 0 0;
+}
+
+.chat-pill {
+  font-family: "Atkinson Hyperlegible", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  background: var(--paper-deep);
+  white-space: nowrap;
+}
+
+.chat-pill--open {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  color: var(--accent);
+}
+
+.chat-pill--connecting {
+  animation: chat-pulse 1.2s ease-in-out infinite;
+}
+
+.chat-pill--error {
+  background: color-mix(in srgb, #b00020 12%, var(--paper));
+  border-color: color-mix(in srgb, #b00020 35%, transparent);
+  color: #7a0016;
+}
+
+@keyframes chat-pulse {
+  50% {
+    opacity: 0.65;
+  }
+}
+
+.chat-log {
+  flex: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 12rem;
+}
+
+.chat-empty {
+  font-family: "Atkinson Hyperlegible", sans-serif;
+  font-size: 0.9rem;
+  color: var(--muted);
+  padding: 1.5rem 0.5rem;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.chat-bubble {
+  font-family: "Atkinson Hyperlegible", sans-serif;
+  max-width: 92%;
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.35rem 1rem 1rem 1rem;
+  animation: chat-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  box-shadow: 0 6px 18px -12px color-mix(in srgb, var(--ink) 40%, transparent);
+}
+
+@keyframes chat-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.chat-bubble--user {
+  align-self: flex-end;
+  background: var(--user-bg);
+  color: var(--user-fg);
+  border-radius: 1rem 0.35rem 1rem 1rem;
+}
+
+.chat-bubble--assistant {
+  align-self: flex-start;
+  background: var(--assistant-bg);
+  border: 1px solid var(--assistant-border);
+}
+
+.chat-bubble__label {
+  display: block;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin-bottom: 0.35rem;
+}
+
+.chat-bubble__text {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chat-compose {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 0.25rem;
+}
+
+.chat-input {
+  font-family: "Atkinson Hyperlegible", sans-serif;
+  font-size: 0.95rem;
+  resize: vertical;
+  min-height: 3.25rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent);
+  background: #fffdf8;
+  color: var(--ink);
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.chat-input:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--ink));
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.chat-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.chat-send {
+  font-family: "Marcellus", serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  align-self: flex-end;
+  padding: 0.55rem 1.35rem;
+  border: none;
+  border-radius: 0.35rem;
+  cursor: pointer;
+  color: var(--paper);
+  background: var(--accent);
+  transition:
+    transform 0.12s ease,
+    filter 0.12s ease;
+}
+
+.chat-send:hover:not(:disabled) {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.chat-send:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
