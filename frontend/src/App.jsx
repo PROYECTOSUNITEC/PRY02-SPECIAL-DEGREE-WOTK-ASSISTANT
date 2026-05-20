@@ -1,3 +1,9 @@
+import ChatAssistant from "./chat/ChatAssistant.jsx";
+
 export default function App() {
-  return <h1>Hola mundo</h1>;
+  return (
+    <main className="app-root">
+      <ChatAssistant />
+    </main>
+  );
 }
