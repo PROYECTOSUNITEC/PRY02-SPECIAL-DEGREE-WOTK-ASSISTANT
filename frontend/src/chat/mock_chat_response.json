@@ -1,0 +1,19 @@
+{
+  "message_id": "e4f5a3b2-c1d0-9e8f-7a6b-5c4d3e2f1a0b",
+  "user_query": "¿Cuáles son los requisitos obligatorios para presentar el Trabajo Especial de Grado (TEG)?",
+  "ai_response": "Para presentar el Trabajo Especial de Grado (TEG), el estudiante debe cumplir con los siguientes requisitos obligatorios:\n\n1. **Aprobación Académica**: Haber aprobado el 100% de las asignaturas del plan de estudio.\n2. **Solvencia Administrativa**: Estar al día con los pagos y obligaciones financieras en la institución.\n3. **Tutor Académico**: Contar con la carta de aceptación firmada por un tutor avalado.\n4. **Servicio Comunitario**: Presentar constancia de culminación de dicho servicio.\n\n*Nota: El borrador debe ser consignado ante el Comité Técnico con un mínimo de 15 días hábiles de anticipación a la fecha de defensa.*",
+  "status": "completed",
+  "error_detail": null,
+  "sources": [
+    {
+      "titulo_seccion": "Manual del Estudiante - Sección 4.2 (Requisitos de Egresados)",
+      "numero_pagina": 18,
+      "snippet": "El estudiante que opte a la presentación del Trabajo Especial de Grado (TEG) deberá demostrar solvencia académica total (100% de créditos aprobados) y solvencia administrativa vigente."
+    },
+    {
+      "titulo_seccion": "Reglamento del Trabajo Especial de Grado - Artículo 12",
+      "numero_pagina": 5,
+      "snippet": "Es requisito indispensable para la inscripción formal del TEG la postulación y aceptación firmada de un tutor académico calificado."
+    }
+  ]
+}
