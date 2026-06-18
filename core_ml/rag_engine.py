@@ -11,12 +11,10 @@ from llama_index.core import (
 )
 from llama_index.core.base.response.schema import StreamingResponse
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.llms.gemini import Gemini
 
-import google.generativeai as genai
-from google.api_core.retry import Retry
-import google.api_core.exceptions
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception
+
+from core_ml.llm_fallback import LLMFallbackCarousel
 
 logger = logging.getLogger(__name__)
 
@@ -37,42 +35,22 @@ _DEFAULT_PERSIST_DIR = _PROJECT_ROOT / "data" / "vector_db"
 
 
 class RAGQueryEngine:
-    # motor rag con llamaindex + gemini + bge-m3
+    # motor rag con carrusel
 
     def __init__(self, persist_dir: str | Path | None = None) -> None:
-        # cargar variables de entorno
         load_dotenv()
-        api_key = os.getenv("GOOGLE_API_KEY")
-        if not api_key:
-            raise EnvironmentError(
-                "La variable de entorno GOOGLE_API_KEY no está configurada."
-            )
 
-        # modelo embeddings en cpu
+        # embeddings en cpu
         logger.info("Cargando modelo de embeddings BAAI/bge-m3 en CPU...")
         Settings.embed_model = HuggingFaceEmbedding(
             model_name="BAAI/bge-m3",
             device="cpu",
         )
 
-        logger.info("Configurando LLM Gemini...")
-
-        # retry policy para api google
-        retry_policy = Retry(
-            initial=1.0,
-            maximum=10.0,
-            multiplier=2.0,
-            predicate=lambda e: isinstance(e, google.api_core.exceptions.GoogleAPICallError) and e.code == 429,
-        )
-        request_options = genai.types.RequestOptions(retry=retry_policy)
-
-        Settings.llm = Gemini(
-            model="models/gemini-flash-latest",
-            temperature=0.1,
-            system_prompt=SYSTEM_PROMPT,
-            max_retries=5,
-            request_options=request_options,
-        )
+        # carrusel multi-api
+        logger.info("Inicializando carrusel LLM...")
+        self._carousel = LLMFallbackCarousel()
+        logger.info("Proveedores disponibles: %s", self._carousel.available_providers)
 
         # cargar indice
         resolved_dir = Path(persist_dir) if persist_dir else _DEFAULT_PERSIST_DIR
@@ -88,54 +66,58 @@ class RAGQueryEngine:
         self._index = load_index_from_storage(storage_context)
         logger.info("RAGQueryEngine inicializado correctamente.")
 
-    def ask_question(self, user_query: str):
-        # ejecutar consulta contra el indice rag
-        query_engine = self._index.as_query_engine(
-            streaming=True,
-            similarity_top_k=3,
-        )
+    def _build_context(self, nodes) -> str:
+        # construir contexto
+        parts = []
+        for i, node in enumerate(nodes, 1):
+            meta = node.node.metadata
+            headers = meta.get("jerarquia_headers", {})
+            titulo = " > ".join(v for k, v in sorted(headers.items()) if v)
+            parts.append(f"[fragmento {i}] {titulo}\n{node.node.text}")
+        return "\n\n".join(parts) if parts else "(sin contexto disponible)"
 
-        # retry con tenacity para mitigacion de 429
+    def ask_question(self, user_query: str):
+        # recuperar y generar
+
+        # paso 1: retrieval
+        retriever = self._index.as_retriever(similarity_top_k=3)
+        nodes = retriever.retrieve(user_query)
+
+        # paso 2: contexto
+        context = self._build_context(nodes)
+
+        # paso 3: generar
         @retry(
-            stop=stop_after_attempt(5),
+            stop=stop_after_attempt(3),
             wait=wait_exponential(multiplier=1, min=2, max=10),
-            retry=retry_if_exception(lambda e: "429" in str(e) or "quota" in str(e).lower() or "limit" in str(e).lower()),
-            reraise=True
+            retry=retry_if_exception(lambda e: "429" in str(e) or "quota" in str(e).lower()),
+            reraise=True,
         )
-        def _execute_query_with_retry():
-            return query_engine.query(user_query)
+        def _generate():
+            return self._carousel.generate(SYSTEM_PROMPT, context, user_query)
 
         try:
-            response = _execute_query_with_retry()
-            original_gen = response.response_gen
+            llm_response = _generate()
+            logger.info("respuesta via %s [modelo: %s]", llm_response.provider, llm_response.model)
 
-            # wrapper para control de errores en streaming
-            def safe_response_gen():
-                try:
-                    for token in original_gen:
-                        yield token
-                except Exception as e:
-                    logger.error("Error durante el streaming: %s", e)
-                    if "429" in str(e) or "quota" in str(e).lower() or "limit" in str(e).lower():
-                        yield "Error: El sistema está experimentando un alto volumen de consultas. Por favor, intenta de nuevo en unos segundos."
-                    else:
-                        yield f"Error: Ocurrió un error inesperado al procesar la consulta. ({str(e)})"
+            def response_gen():
+                yield llm_response.text
 
-            response.response_gen = safe_response_gen()
-            return response
+            return StreamingResponse(
+                response_gen=response_gen(),
+                source_nodes=nodes,
+            )
 
         except Exception as e:
-            logger.error("Error al iniciar consulta: %s", e)
-            error_msg = "Error: El sistema está experimentando un alto volumen de consultas. Por favor, intenta de nuevo en unos segundos."
-            if "404" in str(e):
-                error_msg = "Error: Modelo no encontrado (HTTP 404). Por favor contacte al soporte técnico."
-            elif not ("429" in str(e) or "quota" in str(e).lower() or "limit" in str(e).lower()):
-                error_msg = f"Error al procesar la consulta: {str(e)}"
+            logger.error("error en carrusel tras reintentos: %s", e)
+            error_msg = f"Error al procesar la consulta: {str(e)}"
+            if "429" in str(e) or "quota" in str(e).lower():
+                error_msg = "Error: Alto volumen de consultas en todos los proveedores. Intenta de nuevo en unos segundos."
 
             def error_gen():
                 yield error_msg
 
             return StreamingResponse(
                 response_gen=error_gen(),
-                source_nodes=[]
+                source_nodes=[],
             )

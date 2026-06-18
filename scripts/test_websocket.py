@@ -14,7 +14,7 @@ WS_URL = "ws://127.0.0.1:8000/chats/ws"
 MOCK_REQUEST = {
     "session_id": "a3b9c8d7-e6f5-4a3b-2c1d-0e9f8a7b6c5d",
     "user_id": "9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d4c",
-    "query": "Cómo puedo enfocar mi trabajo especial de grado cuantitativo?",
+    "query": "Cómo es el interlineado para mi tesis?",
 }
 
 
