@@ -58,7 +58,7 @@ async def chat_websocket(websocket: WebSocket) -> None:
             )
 
             # procesar consulta
-            response = await procesar_consulta_rag(request.query)
+            response = await procesar_consulta_rag(request.query, model_selection=request.model_selection)
             await websocket.send_text(response.model_dump_json())
 
             logger.info(

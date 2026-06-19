@@ -40,7 +40,7 @@ RE_JORGE_AUTOR = re.compile(r"^Jorge Enrique Rodríguez Jaimes\s*$", re.MULTILIN
 
 def limpiar_cabezales(texto: str) -> str:
     texto = RE_TITULO_ESTATICO.sub("", texto)
-    texto = RE_CABEZAL_CAPITULO.sub("", texto)
+    # texto = RE_CABEZAL_CAPITULO.sub("", texto)
     texto = RE_TITULO_VACIO.sub("", texto)
     texto = RE_NUMERO_PAGINA.sub("", texto)
     texto = RE_LOGO_ARTEFACTOS.sub("", texto)

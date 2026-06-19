@@ -6,6 +6,8 @@ class ChatRequest(BaseModel):
     session_id: str = Field(..., description="uuid de sesion")
     user_id: str = Field(..., description="uuid de usuario")
     query: str = Field(..., min_length=1, description="consulta del usuario")
+    model_selection: str | None = Field(default=None, description="modelo seleccionado: auto | groq | cohere | gemini")
+
 
 # referencia de fuente
 class SourceReference(BaseModel):
@@ -33,3 +35,6 @@ class ChatResponse(BaseModel):
         default_factory=list,
         description="fuentes recuperadas",
     )
+    provider: str | None = Field(default=None, description="proveedor llm que respondio")
+    model: str | None = Field(default=None, description="modelo llm que respondio")
+

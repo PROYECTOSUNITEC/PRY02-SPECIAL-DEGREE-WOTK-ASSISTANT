@@ -35,21 +35,29 @@ def _extraer_pagina(metadata: dict) -> int:
 def _extraer_titulo_seccion(metadata: dict) -> str:
     # extraer titulo de seccion
     headers = metadata.get("jerarquia_headers", {})
+    if not headers:
+        return "Sección General"
+    if "header_path" in headers:
+        path = headers["header_path"]
+        parts = [p.strip() for p in path.split("/") if p.strip()]
+        if parts:
+            return " > ".join(parts)
     partes = []
     for key in ("Header_1", "Header_2", "Header_3"):
         valor = headers.get(key)
         if valor:
             partes.append(valor)
-    return " > ".join(partes) if partes else "Sección sin título"
+    return " > ".join(partes) if partes else "Sección General"
 
 
-async def procesar_consulta_rag(user_query: str) -> ChatResponse:
+
+async def procesar_consulta_rag(user_query: str, model_selection: str | None = None) -> ChatResponse:
     # procesar consulta contra rag
     message_id = str(uuid4())
 
     try:
         engine = _get_engine()
-        response = engine.ask_question(user_query)
+        response = engine.ask_question(user_query, model_selection=model_selection)
 
         # tokens del stream
         tokens: list[str] = []
@@ -71,13 +79,23 @@ async def procesar_consulta_rag(user_query: str) -> ChatResponse:
                     )
                 )
 
+        # extraer metadatos de modelo/proveedor
+        provider = "desconocido"
+        model = "desconocido"
+        if response.metadata:
+            provider = response.metadata.get("provider", provider)
+            model = response.metadata.get("model", model)
+
         return ChatResponse(
             message_id=message_id,
             user_query=user_query,
             ai_response=respuesta_completa,
             status="completed",
             sources=sources,
+            provider=provider,
+            model=model,
         )
+
 
     except Exception as e:
         logger.exception("Error procesando consulta RAG: %s", e)

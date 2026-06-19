@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente RAG - UNITEC TEG</title>
+    <!-- fuentes tipograficas de google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- marked.js para renderizar markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg-main: #0b0f19;
+            --bg-sidebar: #111827;
+            --bg-card: #1f2937;
+            --bg-bubble-user: #1e293b;
+            --bg-bubble-bot: #111827;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent: #06b6d4;
+            --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            --accent-glow: rgba(6, 182, 212, 0.15);
+            --border-color: #374151;
+            --font-display: 'Outfit', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* barra lateral */
+        .sidebar {
+            width: 320px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+            font-family: var(--font-display);
+        }
+
+        .brand-text h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            font-family: var(--font-display);
+            letter-spacing: -0.02em;
+        }
+
+        .brand-text p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background-color: rgba(31, 41, 55, 0.7);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            align-self: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #ef4444;
+            border-radius: 50%;
+        }
+
+        .status-dot.connected {
+            background-color: #10b981;
+            box-shadow: 0 0 8px #10b981;
+        }
+
+        .sidebar-section {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar-section h3 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            font-family: var(--font-display);
+        }
+
+        .suggestion-btn {
+            background-color: rgba(31, 41, 55, 0.4);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: left;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            line-height: 1.4;
+        }
+
+        .suggestion-btn:hover {
+            background-color: rgba(6, 182, 212, 0.1);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .footer-info {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: auto;
+            text-align: center;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* area de chat principal */
+        .chat-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background-color: var(--bg-main);
+            position: relative;
+        }
+
+        .chat-header {
+            height: 70px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            background-color: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 10;
+        }
+
+        .chat-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: var(--font-display);
+        }
+
+        .messages-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            align-self: flex-end;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+        }
+
+        .message-bubble {
+            padding: 16px 20px;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .message.user .message-bubble {
+            background-color: var(--bg-bubble-user);
+            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.bot .message-bubble {
+            background-color: var(--bg-bubble-bot);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* formateo del markdown en el bot */
+        .message-bubble p {
+            margin-bottom: 12px;
+        }
+        .message-bubble p:last-child {
+            margin-bottom: 0;
+        }
+        .message-bubble ul, .message-bubble ol {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+        .message-bubble li {
+            margin-bottom: 6px;
+        }
+        .message-bubble h1, .message-bubble h2, .message-bubble h3 {
+            font-family: var(--font-display);
+            margin: 16px 0 8px 0;
+            color: #fff;
+        }
+        .message-bubble h1:first-child, .message-bubble h2:first-child, .message-bubble h3:first-child {
+            margin-top: 0;
+        }
+        .message-bubble code {
+            font-family: monospace;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        /* fuentes y referencias */
+        .sources-container {
+            margin-top: 12px;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 12px;
+        }
+
+        .sources-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sources-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .source-card {
+            background-color: rgba(31, 41, 55, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .source-card:hover {
+            border-color: rgba(6, 182, 212, 0.4);
+            background-color: rgba(31, 41, 55, 0.8);
+        }
+
+        .source-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 4px;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .source-page {
+            background-color: rgba(6, 182, 212, 0.15);
+            color: var(--accent);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .source-snippet {
+            color: var(--text-muted);
+            line-height: 1.4;
+            font-style: italic;
+        }
+
+        /* loader de procesamiento */
+        .loader-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+        }
+
+        .dot-pulse {
+            position: relative;
+            left: -9999px;
+            width: 6px;
+            height: 6px;
+            border-radius: 5px;
+            background-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 9999px 0 0 0 var(--accent);
+            animation: dotPulse 1.5s infinite linear;
+        }
+
+        .dot-pulse::before, .dot-pulse::after {
+            content: '';
+            display: inline-block;
+            position: absolute;
+            top: 0;
+            width: 6px;
+            height: 6px;
+            border-radius: 5px;
+            background-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .dot-pulse::before {
+            box-shadow: 9984px 0 0 0 var(--accent);
+            animation: dotPulseBefore 1.5s infinite linear;
+        }
+
+        .dot-pulse::after {
+            box-shadow: 10014px 0 0 0 var(--accent);
+            animation: dotPulseAfter 1.5s infinite linear;
+        }
+
+        @keyframes dotPulseBefore {
+            0% { box-shadow: 9984px 0 0 -5px var(--accent); }
+            30% { box-shadow: 9984px 0 0 2px var(--accent); }
+            60%, 100% { box-shadow: 9984px 0 0 -5px var(--accent); }
+        }
+
+        @keyframes dotPulse {
+            0% { box-shadow: 9999px 0 0 -5px var(--accent); }
+            30% { box-shadow: 9999px 0 0 2px var(--accent); }
+            60%, 100% { box-shadow: 9999px 0 0 -5px var(--accent); }
+        }
+
+        @keyframes dotPulseAfter {
+            0% { box-shadow: 10014px 0 0 -5px var(--accent); }
+            30% { box-shadow: 10014px 0 0 2px var(--accent); }
+            60%, 100% { box-shadow: 10014px 0 0 -5px var(--accent); }
+        }
+
+        /* area de entrada */
+        .chat-input-container {
+            padding: 24px 32px 32px 32px;
+            border-top: 1px solid var(--border-color);
+            background-color: rgba(11, 15, 25, 0.9);
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background-color: rgba(31, 41, 55, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 8px 12px;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+            background-color: rgba(31, 41, 55, 0.8);
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            padding: 10px 12px;
+            resize: none;
+            height: 44px;
+            max-height: 120px;
+        }
+
+        .send-btn {
+            background: var(--accent-gradient);
+            border: none;
+            outline: none;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover {
+            opacity: 0.9;
+            transform: scale(1.03);
+        }
+
+        .send-btn:disabled {
+            background: var(--border-color);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- barra lateral -->
+    <div class="sidebar">
+        <div class="brand">
+            <div class="brand-logo">U</div>
+            <div class="brand-text">
+                <h1>UNITEC RAG</h1>
+                <p>Asistente de Grado v1.0</p>
+            </div>
+        </div>
+
+        <div class="status-badge">
+            <div id="statusDot" class="status-dot"></div>
+            <span id="statusText">Desconectado</span>
+        </div>
+
+        <div class="sidebar-section" style="margin-top: 0; margin-bottom: 16px; flex-grow: 0;">
+            <h3>Modelo / Proveedor</h3>
+            <select id="modelSelect" style="width: 100%; padding: 10px 12px; background-color: rgba(31, 41, 55, 0.4); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 10px; font-family: var(--font-body); font-size: 0.85rem; outline: none; cursor: pointer; transition: all 0.2s ease; margin-top: 6px;">
+                <option value="auto">Carrusel (Automático)</option>
+                <option value="groq">Groq (Llama 3)</option>
+                <option value="cohere">Cohere (Command R)</option>
+                <option value="gemini">Google (Gemini 1.5)</option>
+            </select>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Preguntas Sugeridas</h3>
+            <button class="suggestion-btn" onclick="askPreset('¿Cuáles son los requisitos obligatorios para presentar el Trabajo Especial de Grado (TEG)?')">
+                ¿Cuáles son los requisitos obligatorios para el TEG?
+            </button>
+            <button class="suggestion-btn" onclick="askPreset('¿Cómo puedo enfocar mi trabajo especial de grado cuantitativo?')">
+                ¿Cómo enfocar mi trabajo de grado cuantitativo?
+            </button>
+            <button class="suggestion-btn" onclick="askPreset('¿Qué es la naturaleza del objeto de estudio en investigación cualitativa?')">
+                ¿Qué es la naturaleza del objeto de estudio cualitativo?
+            </button>
+        </div>
+
+        <div class="footer-info">
+            <p>UNITEC • RAG Engine</p>
+        </div>
+    </div>
+
+    <!-- area de chat principal -->
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>Asistente de Trabajo Especial de Grado</h2>
+        </div>
+
+        <div id="messagesList" class="messages-list">
+            <!-- mensaje de bienvenida -->
+            <div class="message bot">
+                <div class="message-bubble">
+                    <p>¡Hola! Soy el asistente académico de la UNITEC. Puedo ayudarte con consultas relacionadas al manual del <strong>Trabajo Especial de Grado (TEG)</strong>.</p>
+                    <p>Hazme una pregunta o selecciona uno de los ejemplos en el panel lateral.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- entrada de chat -->
+        <div class="chat-input-container">
+            <form id="chatForm" onsubmit="sendMessage(event)">
+                <div class="input-wrapper">
+                    <input type="text" id="userInput" class="chat-input" placeholder="Pregunta sobre los requisitos del TEG..." autocomplete="off" required>
+                    <button type="submit" id="sendBtn" class="send-btn" disabled>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let isProcessing = false;
+        const statusDot = document.getElementById("statusDot");
+        const statusText = document.getElementById("statusText");
+        const messagesList = document.getElementById("messagesList");
+        const userInput = document.getElementById("userInput");
+        const sendBtn = document.getElementById("sendBtn");
+
+        // ids persistentes para la sesion
+        let sessionId = localStorage.getItem("unitec_session_id");
+        let userId = localStorage.getItem("unitec_user_id");
+
+        if (!sessionId) {
+            sessionId = crypto.randomUUID();
+            localStorage.setItem("unitec_session_id", sessionId);
+        }
+        if (!userId) {
+            userId = crypto.randomUUID();
+            localStorage.setItem("unitec_user_id", userId);
+        }
+
+        // configurar marked para parsar markdown de forma segura
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+
+        // inicializar conexion websocket
+        function connect() {
+            const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+            const wsUrl = `${protocol}//${window.location.host}/chats/ws`;
+            
+            console.log(`Conectando a ${wsUrl}...`);
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                console.log("Conectado al servidor WebSocket.");
+                statusDot.className = "status-dot connected";
+                statusText.innerText = "Conectado";
+                sendBtn.disabled = false;
+            };
+
+            ws.onclose = (e) => {
+                console.log("Conexión WebSocket cerrada. Reintentando en 3s...", e);
+                statusDot.className = "status-dot";
+                statusText.innerText = "Desconectado";
+                sendBtn.disabled = true;
+                setTimeout(connect, 3000);
+            };
+
+            ws.onerror = (err) => {
+                console.error("Error en WebSocket:", err);
+                ws.close();
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleServerResponse(data);
+            };
+        }
+
+        // procesar respuesta recibida
+        function handleServerResponse(data) {
+            const status = data.status;
+            
+            if (status === "processing") {
+                showTypingIndicator();
+            } else if (status === "completed") {
+                removeTypingIndicator();
+                appendBotMessage(data.ai_response, data.sources, data.provider, data.model);
+            } else if (status === "error") {
+                removeTypingIndicator();
+                appendBotMessage(`⚠️ **Error del Sistema:** ${data.error_detail || 'No se pudo obtener una respuesta.'}`, [], "error", "none");
+            }
+        }
+
+
+        // enviar mensaje
+        function sendMessage(e) {
+            if (e) e.preventDefault();
+            const text = userInput.value.trim();
+            if (!text || isProcessing) return;
+
+            // agregar mensaje de usuario al ui
+            appendUserMessage(text);
+            
+            // preparar carga util
+            const payload = {
+                session_id: sessionId,
+                user_id: userId,
+                query: text,
+                model_selection: document.getElementById("modelSelect").value
+            };
+
+            // enviar via ws
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify(payload));
+                isProcessing = true;
+                userInput.value = "";
+                userInput.focus();
+                sendBtn.disabled = true;
+            } else {
+                appendBotMessage("⚠️ **Error:** No hay conexión activa con el servidor.", []);
+            }
+        }
+
+        // ejecutar pregunta sugerida
+        function askPreset(text) {
+            if (isProcessing) return;
+            userInput.value = text;
+            sendMessage();
+        }
+
+        // renderizar mensaje de usuario
+        function appendUserMessage(text) {
+            const msgDiv = document.createElement("div");
+            msgDiv.className = "message user";
+            msgDiv.innerHTML = `
+                <div class="message-bubble">
+                    <p>${escapeHtml(text)}</p>
+                </div>
+            `;
+            messagesList.appendChild(msgDiv);
+            scrollToBottom();
+        }
+
+        // renderizar mensaje de bot con markdown y fuentes
+        function appendBotMessage(text, sources, provider, model) {
+            isProcessing = false;
+            sendBtn.disabled = false;
+
+            const msgDiv = document.createElement("div");
+            msgDiv.className = "message bot";
+
+            let sourcesHtml = "";
+            if (sources && sources.length > 0) {
+                const cardsHtml = sources.map(src => `
+                    <div class="source-card" style="padding: 8px 12px;">
+                        <div class="source-header" style="margin-bottom: 0;">
+                            <span>${escapeHtml(src.titulo_seccion)}</span>
+                            <span class="source-page">p. ${src.numero_pagina}</span>
+                        </div>
+                    </div>
+                `).join("");
+
+                sourcesHtml = `
+                    <div class="sources-container">
+                        <div class="sources-title">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                            </svg>
+                            Fuentes de Referencia
+                        </div>
+                        <div class="sources-grid">
+                            ${cardsHtml}
+                        </div>
+                    </div>
+                `;
+            }
+
+            let metaHtml = "";
+            if (provider && model) {
+                metaHtml = `
+                    <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 10px; display: flex; align-items: center; gap: 6px; justify-content: flex-end; border-top: 1px solid rgba(255,255,255,0.03); padding-top: 6px;">
+                        <span style="display:inline-block; width: 6px; height: 6px; border-radius:50%; background-color: ${provider === 'error' ? '#ef4444' : '#10b981'}"></span>
+                        <span>Respondido vía <strong>${escapeHtml(provider)}</strong> (${escapeHtml(model)})</span>
+                    </div>
+                `;
+            }
+
+            msgDiv.innerHTML = `
+                <div class="message-bubble">
+                    ${marked.parse(text)}
+                    ${sourcesHtml}
+                    ${metaHtml}
+                </div>
+            `;
+            messagesList.appendChild(msgDiv);
+            scrollToBottom();
+        }
+
+
+        // indicador de escribiendo/procesando
+        function showTypingIndicator() {
+            if (document.getElementById("typingIndicator")) return;
+
+            const msgDiv = document.createElement("div");
+            msgDiv.className = "message bot";
+            msgDiv.id = "typingIndicator";
+            msgDiv.innerHTML = `
+                <div class="message-bubble">
+                    <div class="loader-container">
+                        <div class="dot-pulse"></div>
+                    </div>
+                </div>
+            `;
+            messagesList.appendChild(msgDiv);
+            scrollToBottom();
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById("typingIndicator");
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        // scroll al fondo
+        function scrollToBottom() {
+            messagesList.scrollTop = messagesList.scrollHeight;
+        }
+
+        // utilitario para sanitizar html en texto plano de entrada
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        // iniciar conexion
+        connect();
+    </script>
+</body>
+</html>

@@ -71,7 +71,7 @@ class GroqProvider(BaseLLMProvider):
 class CohereProvider(BaseLLMProvider):
     # cohere
     name = "cohere"
-    model = "command-r"
+    model = "command-r-08-2024"
 
     def __init__(self):
         api_key = os.getenv("COHERE_API_KEY")
@@ -153,7 +153,15 @@ class LLMFallbackCarousel:
         if not self._providers:
             raise RuntimeError("ningun proveedor llm disponible")
 
-    def generate(self, system_prompt: str, context: str, user_query: str) -> LLMResponse:
+    def generate(self, system_prompt: str, context: str, user_query: str, provider_name: str | None = None) -> LLMResponse:
+        # ejecutar con un proveedor específico o con fallback
+        if provider_name and provider_name != "auto":
+            target = next((p for p in self._providers if p.name == provider_name), None)
+            if not target:
+                raise ValueError(f"proveedor {provider_name} no disponible")
+            logger.info("intentando con proveedor forzado: %s", target.name)
+            return target.generate(system_prompt, context, user_query)
+
         # ejecutar con fallback
         errors: list[tuple[str, str]] = []
 
@@ -181,6 +189,7 @@ class LLMFallbackCarousel:
         # error si todos fallan
         error_summary = "; ".join(f"[{name}] {err[:100]}" for name, err in errors)
         raise RuntimeError(f"todas las apis fallaron: {error_summary}")
+
 
     @property
     def available_providers(self) -> list[str]:
