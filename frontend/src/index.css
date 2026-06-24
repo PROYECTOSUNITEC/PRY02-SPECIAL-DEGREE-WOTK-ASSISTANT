@@ -1,0 +1,1108 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Colors - UNITEC Official Institutional Light Palette */
+  --color-abyssal-teal: #f8fafc;       /* Canvas level 0 */
+  --color-midnight-current: #ffffff;   /* Trench level 1 (Cards, Sidebar) */
+  --color-tide-pool-teal: #f1f5f9;     /* Reef level 2 (Inputs, Headers) */
+  --color-fog-veil: #334155;           /* Main Body Text (high contrast Slate-700) */
+  --color-ice-mist: #00479e;           /* Accent UNITEC Brand Blue */
+  --color-ash-gray: #cbd5e1;           /* Borders (Slate-300) */
+  --color-snow-sheet: #0f172a;         /* Heading Text (Slate-900, max contrast) */
+  --color-lilac-wisp: #64748b;         /* Subtitle Text (Slate-500) */
+  
+  /* Gradients */
+  --gradient-current: linear-gradient(90deg, #00479e 0%, #0033a0 100%);
+  --gradient-aurora: linear-gradient(90deg, #00479e 0%, #3b82f6 50%, #60a5fa 100%);
+  --gradient-twilight: radial-gradient(circle, #ffffff 0%, #f1f5f9 60%, #e2e8f0 100%);
+
+  /* Surfaces */
+  --surface-abyss: var(--color-abyssal-teal);     /* Level 0 */
+  --surface-trench: var(--color-midnight-current); /* Level 1 */
+  --surface-reef: var(--color-tide-pool-teal);     /* Level 2 */
+
+  /* Typography — Font Families */
+  --font-matter: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-arial: 'Arial', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Typography — Scale & Tracking */
+  --text-eyebrow: 10px;
+  --leading-eyebrow: 1.4;
+  --tracking-eyebrow: 2.4px;
+
+  --text-caption: 12px;
+  --leading-caption: 1.4;
+  --tracking-caption: 1.44px;
+
+  --text-body: 14px;
+  --leading-body: 1.5;
+  --tracking-body: 0.77px;
+
+  --text-body-lg: 16px;
+  --leading-body-lg: 1.5;
+  --tracking-body-lg: normal;
+
+  --text-subheading: 20px;
+  --leading-subheading: 1.4;
+  --tracking-subheading: normal;
+
+  --text-heading-sm: 24px;
+  --leading-heading-sm: 1.4;
+  --tracking-heading-sm: -0.29px;
+
+  --text-heading: 36px;
+  --leading-heading: 1.3;
+  --tracking-heading: -0.47px;
+
+  --text-heading-lg: 61px;
+  --leading-heading-lg: 1.1;
+  --tracking-heading-lg: -1.22px;
+
+  --text-display: 96px;
+  --leading-display: 1;
+  --tracking-display: -3.84px;
+
+  --text-display-xl: 295px;
+  --leading-display-xl: 1;
+  --tracking-display-xl: -13.57px;
+
+  /* Typography — Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+
+  /* Spacing */
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-28: 28px;
+  --spacing-32: 32px;
+  --spacing-36: 36px;
+  --spacing-40: 40px;
+  --spacing-48: 48px;
+  --spacing-64: 64px;
+  --spacing-80: 80px;
+  --spacing-120: 120px;
+  --spacing-140: 140px;
+  --spacing-156: 156px;
+  --spacing-160: 160px;
+  --spacing-172: 172px;
+
+  /* Layout */
+  --page-max-width: 1200px;
+  --section-gap: 68px;
+  --card-padding: 40px;
+  --element-gap: 20px;
+
+  /* Border Radii */
+  --radius-tags: 6px;
+  --radius-cards: 16px;
+  --radius-inputs: 6px;
+  --radius-avatars: 9999px;
+  --radius-buttons: 6px;
+}
+
+/* Base Resets */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--surface-abyss);
+  color: var(--color-fog-veil);
+  font-family: var(--font-matter);
+  font-weight: var(--font-weight-regular);
+  letter-spacing: var(--tracking-body);
+  line-height: var(--leading-body);
+  font-size: var(--text-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+code, pre {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Custom Abyssal Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-abyss);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-tide-pool-teal);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ash-gray);
+}
+
+/* Typography styles */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-snow-sheet);
+  font-weight: var(--font-weight-regular);
+}
+
+/* Global App Container */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--surface-abyss);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top Navigation Bar */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  padding: 0 var(--spacing-24);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+  background: transparent;
+}
+
+.top-nav-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+  font-size: var(--text-body-lg);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-caption);
+  color: var(--color-snow-sheet);
+  text-transform: uppercase;
+}
+
+.top-nav-logo-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.top-nav-menu {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-32);
+}
+
+.top-nav-link {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caption);
+  color: var(--color-fog-veil);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  font-weight: var(--font-weight-medium);
+}
+
+.top-nav-link:hover {
+  color: var(--color-snow-sheet);
+}
+
+/* Auros Button styles */
+.btn-primary-gradient {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--gradient-current);
+  color: var(--color-midnight-current);
+  font-family: var(--font-matter);
+  font-size: var(--text-caption);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-caption);
+  text-transform: uppercase;
+  border: none;
+  border-radius: var(--radius-buttons);
+  padding: 14px 28px;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.btn-primary-gradient:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+.btn-primary-gradient:active {
+  transform: translateY(0);
+}
+
+.btn-primary-gradient:disabled {
+  background: var(--color-tide-pool-teal);
+  color: var(--color-fog-veil);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn-ghost-aurora {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--color-snow-sheet);
+  font-family: var(--font-matter);
+  font-size: var(--text-caption);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-caption);
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  border-image: var(--gradient-aurora) 1;
+  border-radius: var(--radius-buttons); /* note: border-image disables border-radius in vanilla CSS, so we handle it with a clip-path or simple fallback */
+  padding: 14px 24px;
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease;
+  position: relative;
+}
+
+/* Better rounded border gradient workaround for buttons */
+.btn-ghost-rounded {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--color-snow-sheet);
+  font-family: var(--font-matter);
+  font-size: var(--text-caption);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-caption);
+  text-transform: uppercase;
+  border: none;
+  border-radius: var(--radius-buttons);
+  padding: 14px 24px;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+.btn-ghost-rounded::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: var(--radius-buttons);
+  padding: 1px; /* width of border */
+  background: var(--gradient-aurora);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  z-index: -1;
+  transition: opacity 0.2s ease;
+}
+
+.btn-ghost-rounded:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.btn-ghost-rounded::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-buttons);
+  background: var(--color-lilac-wisp);
+  opacity: 0;
+  z-index: -2;
+  transition: opacity 0.25s ease;
+}
+
+.btn-ghost-rounded:hover::after {
+  opacity: 0.05;
+}
+
+/* Floating Arrow Action Button (Level 2 Reef) */
+.btn-arrow-link {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-tags);
+  border: 1px solid var(--color-fog-veil);
+  background: transparent;
+  color: var(--color-snow-sheet);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-arrow-link:hover {
+  border-color: var(--color-ice-mist);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Tonal depth styling - Elevations without shadow */
+.surface-level-0 {
+  background-color: var(--surface-abyss);
+}
+.surface-level-1 {
+  background-color: var(--surface-trench);
+}
+.surface-level-2 {
+  background-color: var(--surface-reef);
+}
+
+/* SECTION EYEBROW WITH DOT PREFIX */
+.section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-12);
+  font-size: var(--text-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-fog-veil);
+  font-weight: var(--font-weight-medium);
+}
+
+.section-eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #007353;
+  flex-shrink: 0;
+}
+
+/* Layout Grid for Login Screen (Double Column) */
+.login-container-grid {
+  display: grid;
+  grid-template-columns: 480px 1fr;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--surface-abyss);
+}
+
+@media (max-width: 900px) {
+  .login-container-grid {
+    grid-template-columns: 1fr;
+  }
+  .login-hero-pane {
+    display: none;
+  }
+}
+
+.login-form-pane {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px var(--spacing-40);
+  background-color: var(--surface-abyss);
+  z-index: 10;
+  position: relative;
+}
+
+.login-hero-pane {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 80px;
+  background-color: var(--surface-midnight-current);
+  position: relative;
+  overflow: hidden;
+  border-left: 1px solid var(--color-ash-gray);
+}
+
+.login-hero-pane::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 80%;
+  background: var(--gradient-twilight);
+  opacity: 0.03;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+/* Auros login card */
+.auth-card-auros {
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+  background: var(--surface-trench);
+  padding: var(--card-padding);
+  border-radius: var(--radius-cards);
+  border: 1px solid var(--color-ash-gray);
+  box-shadow: none; /* No drop shadows in Auros */
+  animation: fadeIn 0.4s ease-out;
+}
+
+.auth-header-auros {
+  margin-bottom: var(--spacing-32);
+}
+
+.auth-logo-auros {
+  font-family: var(--font-matter);
+  font-size: var(--text-heading-sm);
+  font-weight: var(--font-weight-regular);
+  letter-spacing: var(--tracking-heading-sm);
+  color: var(--color-snow-sheet);
+  margin-bottom: var(--spacing-12);
+}
+
+.auth-subtitle-auros {
+  color: var(--color-fog-veil);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  letter-spacing: var(--tracking-caption);
+}
+
+/* Form Controls */
+.form-group-auros {
+  margin-bottom: var(--spacing-24);
+}
+
+.form-label-auros {
+  display: block;
+  font-size: var(--text-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-fog-veil);
+  margin-bottom: 8px;
+  font-weight: var(--font-weight-medium);
+}
+
+.form-input-auros {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--surface-reef); /* Tonal elevation */
+  border: 1px solid var(--color-ash-gray);
+  border-radius: var(--radius-inputs);
+  color: var(--color-snow-sheet);
+  font-family: var(--font-matter);
+  font-size: var(--text-body);
+  letter-spacing: var(--tracking-body);
+  transition: all 0.2s ease;
+}
+
+.form-input-auros:focus {
+  outline: none;
+  border-color: var(--color-ice-mist);
+}
+
+.form-input-auros::placeholder {
+  color: rgba(187, 199, 198, 0.4);
+}
+
+/* Custom error message */
+.error-message-auros {
+  padding: 12px;
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border-radius: var(--radius-inputs);
+  font-size: var(--text-caption);
+  margin-bottom: var(--spacing-20);
+  text-align: left;
+}
+
+.auth-switch-auros {
+  margin-top: var(--spacing-24);
+  text-align: center;
+  font-size: var(--text-caption);
+  letter-spacing: var(--tracking-caption);
+  color: var(--color-fog-veil);
+}
+
+.auth-switch-link-auros {
+  color: var(--color-snow-sheet);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium);
+  text-decoration: underline;
+  margin-left: var(--spacing-12);
+}
+
+.auth-switch-link-auros:hover {
+  color: var(--color-ice-mist);
+}
+
+/* Particles Canvas Background layer */
+.particle-canvas-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Chat Layout Redesign */
+.chat-layout-auros {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  padding-top: 64px; /* Space for fixed navbar */
+  background-color: var(--surface-abyss);
+}
+
+.sidebar-auros {
+  width: 300px;
+  height: 100%;
+  background-color: var(--surface-trench);
+  border-right: 1px solid var(--color-ash-gray);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.sidebar-header-auros {
+  padding: var(--spacing-24);
+  border-bottom: 1px solid var(--color-ash-gray);
+}
+
+.session-list-auros {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-20) var(--spacing-12);
+}
+
+.btn-new-chat-auros {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--surface-reef);
+  border: 1px solid var(--color-ash-gray);
+  color: var(--color-snow-sheet);
+  border-radius: var(--radius-buttons);
+  cursor: pointer;
+  font-family: var(--font-matter);
+  font-size: var(--text-caption);
+  letter-spacing: var(--tracking-caption);
+  text-transform: uppercase;
+  font-weight: var(--font-weight-medium);
+  width: 100%;
+  margin-bottom: var(--spacing-20);
+  transition: all 0.2s ease;
+}
+
+.btn-new-chat-auros:hover {
+  border-color: var(--color-ice-mist);
+  background: rgba(0, 71, 158, 0.08);
+}
+
+.session-item-auros {
+  padding: 12px 16px;
+  border-radius: var(--radius-inputs);
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-fog-veil);
+  font-size: var(--text-body);
+}
+
+.session-item-auros:hover {
+  background-color: var(--surface-reef);
+  color: var(--color-snow-sheet);
+}
+
+.session-item-auros.active {
+  background-color: var(--surface-reef);
+  border-color: var(--color-ash-gray);
+  color: var(--color-snow-sheet);
+  position: relative;
+}
+
+.session-item-auros.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 25%;
+  height: 50%;
+  width: 3px;
+  background: var(--gradient-current);
+  border-radius: 0 4px 4px 0;
+}
+
+.sidebar-footer-auros {
+  padding: var(--spacing-20);
+  border-top: 1px solid var(--color-ash-gray);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--surface-trench);
+}
+
+.user-info-auros {
+  display: flex;
+  flex-direction: column;
+  max-width: 190px;
+}
+
+.user-email-auros {
+  font-size: var(--text-caption);
+  letter-spacing: var(--tracking-caption);
+  color: var(--color-snow-sheet);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-status-auros {
+  font-size: var(--text-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: #007353;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+/* Chat Main Workspace */
+.chat-main-auros {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--surface-abyss);
+  position: relative;
+  overflow: hidden;
+}
+
+.chat-header-auros {
+  height: 60px;
+  border-bottom: 1px solid var(--color-ash-gray);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-24);
+  z-index: 5;
+  background-color: var(--surface-abyss);
+}
+
+.chat-header-title-auros {
+  font-size: var(--text-caption);
+  letter-spacing: var(--tracking-caption);
+  text-transform: uppercase;
+  color: var(--color-snow-sheet);
+  font-weight: var(--font-weight-medium);
+}
+
+.messages-container-auros {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-32);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-24);
+  z-index: 5;
+}
+
+/* EMPTY HERO STATE FOR AUROS */
+.empty-state-auros {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: var(--spacing-48);
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero-eyebrow-container {
+  margin-bottom: var(--spacing-24);
+}
+
+.hero-headline-auros {
+  font-family: var(--font-matter);
+  font-size: var(--text-heading-lg);
+  line-height: var(--leading-heading-lg);
+  letter-spacing: var(--tracking-heading-lg);
+  color: var(--color-snow-sheet);
+  font-weight: var(--font-weight-regular);
+  margin-bottom: var(--spacing-24);
+  max-width: 600px;
+}
+
+.hero-subhead-auros {
+  font-size: var(--text-body-lg);
+  color: var(--color-fog-veil);
+  line-height: var(--leading-body-lg);
+  max-width: 500px;
+  margin-bottom: var(--spacing-40);
+}
+
+.hero-sphere-placeholder {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.15;
+}
+
+.demo-trigger-container {
+  display: flex;
+  gap: var(--spacing-16);
+  z-index: 10;
+}
+
+/* Section Link Card - Tonal distinction, no borders, no shadows */
+.section-link-card-auros {
+  background-color: var(--surface-trench);
+  border-radius: var(--radius-cards);
+  padding: var(--card-padding);
+  text-align: left;
+  position: relative;
+  transition: background-color 0.2s ease;
+  max-width: 420px;
+  border: none;
+}
+
+.section-link-card-auros:hover {
+  background-color: rgba(0, 71, 158, 0.05);
+}
+
+.section-link-card-title-auros {
+  font-size: var(--text-heading-sm);
+  letter-spacing: var(--tracking-heading-sm);
+  color: var(--color-snow-sheet);
+  margin-bottom: var(--spacing-16);
+}
+
+.section-link-card-body-auros {
+  font-size: var(--text-body);
+  color: var(--color-fog-veil);
+  line-height: var(--leading-body);
+}
+
+/* Chat bubble aesthetics */
+.message-bubble-auros {
+  display: flex;
+  gap: var(--spacing-16);
+  max-width: 80%;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.message-bubble-auros.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.message-bubble-auros.assistant {
+  align-self: flex-start;
+}
+
+.avatar-auros {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-tags);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: var(--text-caption);
+}
+
+.avatar-auros.user {
+  background-color: var(--surface-reef);
+  color: var(--color-snow-sheet);
+  border: 1px solid var(--color-ash-gray);
+}
+
+.avatar-auros.assistant {
+  background-color: var(--surface-trench);
+  color: var(--color-ice-mist);
+  border: 1px solid var(--color-ash-gray);
+}
+
+.message-content-auros {
+  padding: 16px 20px;
+  border-radius: var(--radius-cards);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  letter-spacing: var(--tracking-body);
+}
+
+.message-bubble-auros.user .message-content-auros {
+  background-color: var(--surface-reef);
+  color: var(--color-snow-sheet);
+  border-top-right-radius: 2px;
+}
+
+.message-bubble-auros.assistant .message-content-auros {
+  background-color: var(--surface-trench);
+  color: var(--color-fog-veil);
+  border-top-left-radius: 2px;
+  border: 1px solid var(--color-ash-gray);
+}
+
+.message-content-auros p {
+  margin-bottom: 12px;
+}
+
+.message-content-auros p:last-child {
+  margin-bottom: 0;
+}
+
+.message-content-auros ul, .message-content-auros ol {
+  margin-left: 20px;
+  margin-bottom: 12px;
+}
+
+.message-content-auros li {
+  margin-bottom: 6px;
+}
+
+.message-content-auros strong {
+  color: var(--color-snow-sheet);
+}
+
+.message-content-auros pre {
+  background: var(--surface-reef);
+  padding: var(--spacing-16);
+  border-radius: var(--radius-inputs);
+  border: 1px solid var(--color-ash-gray);
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+.message-content-auros code {
+  color: var(--color-ice-mist);
+  font-size: 0.9em;
+}
+
+/* Chat Input Area */
+.input-container-auros {
+  padding: var(--spacing-24) var(--spacing-32);
+  border-top: 1px solid var(--color-ash-gray);
+  background-color: var(--surface-abyss);
+  z-index: 5;
+}
+
+.input-box-auros {
+  display: flex;
+  gap: 12px;
+  background: var(--surface-trench);
+  border: 1px solid var(--color-ash-gray);
+  border-radius: var(--radius-inputs);
+  padding: 8px 12px;
+  transition: all 0.2s ease;
+  align-items: center;
+}
+
+.input-box-auros:focus-within {
+  border-color: var(--color-ice-mist);
+}
+
+.chat-input-auros {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--color-snow-sheet);
+  font-family: var(--font-matter);
+  font-size: var(--text-body);
+  outline: none;
+  resize: none;
+  padding: 8px 4px;
+  height: 38px;
+  max-height: 120px;
+}
+
+.chat-status-bar-auros {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 12px;
+  font-size: var(--text-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-fog-veil);
+}
+
+/* Lateral Sources Panel (Level 1 Trench) */
+.sources-panel-auros {
+  width: 320px;
+  height: 100%;
+  background-color: var(--surface-trench);
+  border-left: 1px solid var(--color-ash-gray);
+  display: flex;
+  flex-direction: column;
+  animation: slideLeft 0.3s ease-out;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.sources-header-auros {
+  padding: var(--spacing-24);
+  border-bottom: 1px solid var(--color-ash-gray);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sources-container-auros {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-20);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+}
+
+.source-card-auros {
+  background-color: var(--surface-reef); /* Level 2 Reef */
+  border: 1px solid var(--color-ash-gray);
+  border-radius: var(--radius-tags);
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.source-card-auros:hover {
+  border-color: var(--color-ice-mist);
+}
+
+.source-title-auros {
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: 6px;
+  color: var(--color-snow-sheet);
+}
+
+.source-badge-auros {
+  display: inline-block;
+  font-size: var(--text-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  background: rgba(237, 255, 254, 0.05);
+  color: var(--color-ice-mist);
+  padding: 4px 8px;
+  border-radius: var(--radius-tags);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-12);
+  border: 1px solid rgba(237, 255, 254, 0.1);
+}
+
+.source-snippet-header-auros {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--text-caption);
+  color: var(--color-fog-veil);
+  cursor: pointer;
+  padding: var(--spacing-12) 0 0 0;
+  border-top: 1px dashed var(--color-ash-gray);
+}
+
+.source-snippet-content-auros {
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  color: var(--color-fog-veil);
+  background: var(--surface-trench);
+  padding: 12px;
+  border-radius: var(--radius-tags);
+  margin-top: 8px;
+  white-space: pre-wrap;
+  border: 1px solid var(--color-ash-gray);
+}
+
+/* Glassmorphism utility for floating details */
+.glass-auros {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-ash-gray);
+}
+
+/* Micro-animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideLeft {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+/* Pulsing glow for Auros */
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(0, 130, 124, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(203, 255, 252, 0.3);
+  }
+}
+
+.glow-active-auros {
+  animation: glowPulse 2.5s infinite ease-in-out;
+}
+
+/* Typing bounce loading indicator */
+.typing-indicator-auros {
+  display: flex;
+  gap: 6px;
+  padding: 12px 16px;
+  background: var(--surface-trench);
+  border: 1px solid var(--color-ash-gray);
+  border-radius: var(--radius-cards);
+  align-self: flex-start;
+  margin-top: 8px;
+}
+
+.typing-dot-auros {
+  width: 6px;
+  height: 6px;
+  background: var(--color-ice-mist);
+  border-radius: 50%;
+  animation: typingBounce 1.4s infinite ease-in-out both;
+}
+
+.typing-dot-auros:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot-auros:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typingBounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1.0); }
+}
+
+/* Spinner */
+.spinner-auros {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 71, 158, 0.1);
+  border-top-color: var(--color-ice-mist);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
